@@ -9,6 +9,7 @@ def debug_vars():
         pos2 = cria_posicao("b", "3")
         t = cria_tabuleiro()
 
+        #print(tabuleiro_para_str(tuplo_para_tabuleiro(((0,1,-1),(-0,1,-1),(1,0,-1)))))
 def debug_msgs(input):
     global debug
     if debug:
@@ -16,6 +17,9 @@ def debug_msgs(input):
 
 #ist199309 Rafael Girao - Projeto 2 de FP
 
+def minimax(t, jgdr, profnd, seq_movs):
+    if obter_ganhador(t) != cria_peca(" ") or profnd == 0:
+        return(obter_ganhador(t),)
 #------------------------TAD posicao (1.5 valores)------------------
 
 #Construtores
@@ -57,7 +61,7 @@ def posicao_para_str(p):
 
 #Funcao auxiliar: Retorna todas as posicoes existentes
 
-def gera_todas_posicoes():
+def obter_todas_posicoes():
     cols = ("a","b","c")
     linhas = ("1","2","3")
     return [cria_posicao(c,l) for l in linhas for c in cols]
@@ -70,7 +74,7 @@ def obter_posicoes_adjacentes(p):
     c, l = obter_pos_c(p), obter_pos_l(p)
     
     centro = cria_posicao("b", "2")
-    posicoes = gera_todas_posicoes()
+    posicoes = obter_todas_posicoes()
 
     #Caso de ser o centro
     if posicoes_iguais(p, centro):
@@ -79,7 +83,7 @@ def obter_posicoes_adjacentes(p):
     #Todos os outros casos
     else:
         rslt = []
-        if c == "a" or c == "c":
+        if c == "a" or c == "c":    
             rslt.append(cria_posicao("b", l))
         elif c == "b":
             rslt.append(cria_posicao("a", l))    
@@ -162,11 +166,13 @@ def peca_para_inteiro(p):
 def cria_tabuleiro():
     t = {}
     peca_vazia = cria_peca(" ")
-    for pos in gera_todas_posicoes():
+    for pos in obter_todas_posicoes():
         t[posicao_para_str(pos)] = peca_vazia
     return t
 
 def cria_copia_tabuleiro(t):
+    if not eh_tabuleiro(t):
+        raise ValueError("cria_copia_tabuleiro: argumento invalido")
     return t.copy()
     
 #Seletores
@@ -186,7 +192,7 @@ def obter_vetor(t, vect):
         debug_msgs("obter_vetor | vect_posicoes = {}".format(vect_posicoes))
     #Caso do vetor pedido ser linha
     else:
-        vect_posicoes = [cria_posicao(l, vect) for c in cols]
+        vect_posicoes = [cria_posicao(c, vect) for c in cols]
         debug_msgs("obter_vetor | vect_posicoes = {}".format(vect_posicoes))
     
     for pos in vect_posicoes:
@@ -213,10 +219,9 @@ def eh_tabuleiro(t):
     #Verificar se t eh dicionario de 9 elementos
     if not isinstance(t, dict) and len(t) == 9:
         return False
-    posicoes = gera_todas_posicoes()
     count_x, count_o = 0,0
 
-    for pos in posicoes:
+    for pos in obter_todas_posicoes():
         str_pos = posicao_para_str(pos)
         peca = t[str_pos]
         if not(str_pos in t and eh_peca(peca)):
@@ -241,18 +246,20 @@ def eh_tabuleiro(t):
 def tabuleiros_iguais(t1, t2):
     return t1 == t2
 
+#funcao auxiliar
+def print_tabuleiro(t):
+    print(tabuleiro_para_str(t))
+
 def tabuleiro_para_str(t):
-    tabstr = """   a b c
-    1 {}-{}-{}
-    | \ | / |
-    2 {}-{}-{}
-    | / | \ |
-    3 {}-{}-{}
-    """
-    #return tabstr
-    posicoes = gera_todas_posicoes()
+    tabstr = """   a   b   c
+1 {}-{}-{}
+   | \ | / |
+2 {}-{}-{}
+   | / | \ |
+3 {}-{}-{}
+"""
     pecas_ordenadas = []
-    for pos in posicoes:
+    for pos in obter_todas_posicoes():
         pecas_ordenadas.append(peca_para_str(obter_peca(t, pos)))
     pecas_ordenadas = tuple(pecas_ordenadas)
     debug_msgs("tabuleiro_para_str | pecas_ordenadas = {}".format(pecas_ordenadas))
@@ -267,7 +274,7 @@ def tuplo_para_tabuleiro(tpl):
     tpl = [valor for linha in tpl for valor in linha]
 
     i = 0
-    posicoes = gera_todas_posicoes()
+    posicoes = obter_todas_posicoes()
     for valor in tpl:
         if valor == -1:
             peca = cria_peca("O")
@@ -280,6 +287,43 @@ def tuplo_para_tabuleiro(tpl):
         i+=1
     return t
 
+def obter_ganhador(t):
+    tpl_cols = ("a","b","c")
+    tpl_linhas = ("1","2","3")
+    linhas = [obter_vetor(t, l) for l in tpl_linhas]
+    cols = [obter_vetor(t, c) for c in tpl_cols]
+
+    for linha in linhas:
+        if linha[0] == linha[1] == linha[2]:
+            return linha[0]
+    for col in cols:
+        if col[0] == col[1] == col[2]:
+            return col[0]
+    return cria_peca(" ")
+
+#funcao auxiliar
+def obter_posicoes_peca(t, peca):
+    rslt = []
+    for pos in obter_todas_posicoes():
+        if obter_peca(t, pos) == peca:
+            rslt.append(pos)
+
+    return tuple(rslt)
+
+def obter_posicoes_livres(t):
+    return obter_posicoes_peca(t, cria_peca(" "))
+        
+def obter_posicoes_jogador(t, j):
+    return obter_posicoes_peca(t, j)
+
+#------------------------Funcoes adicionais------------------´
+
+#Funcao auxiliar
+def obter_nr_pecas(t, peca):
+    for pos in obter_todas_posicoes():
+        if obter_peca(t, pos) == 
+
+def obter_movimento_manual(t, peca):
 
 
 #delete later
