@@ -1,5 +1,4 @@
-debug = True
-
+debug = False
 def debug_vars():
     global debug
     if debug:
@@ -7,10 +6,11 @@ def debug_vars():
 
         pos1 = cria_posicao("b", "2")
         pos2 = cria_posicao("b", "3")
-        t = cria_tabuleiro()
+        tpl = ((0, 1, -1), (-0, 1, -1), (1, 0, -1))
+        t = tuplo_para_tabuleiro(tpl)
 
-        #print(tabuleiro_para_str(tuplo_para_tabuleiro(((0,1,-1),(-0,1,-1),(1,0,-1)))))
-def debug_msgs(input):
+
+def dbg_msgs(input):
     global debug
     if debug:
         print(input)
@@ -47,8 +47,9 @@ def obter_pos_l(p):
 
 #Reconhecedores
 def eh_posicao(p):
-    return isinstance(p, dict) and p["c"] in ("a","b","c") and \
-        p["l"] in ("1","2","3") and len(p1) == 2
+    return isinstance(p, dict) and "c" in p and "l" in p and \
+        p["c"] in ("a","b","c") and \
+        p["l"] in ("1","2","3") and len(p) == 2
 
 #Teste
 def posicoes_iguais(p1, p2):
@@ -95,7 +96,7 @@ def obter_posicoes_adjacentes(p):
             rslt.append(cria_posicao(c, "3"))
 
         if c != "b" and l != "2":
-            debug_msgs("c = {} and l = {}".format(c, l))
+            dbg_msgs("c = {} and l = {}".format(c, l))
             rslt.append(centro)
 
         #Ordenar o resultado (rslt_ordenado = resultado ordenado)
@@ -127,6 +128,8 @@ def cria_copia_peca(p):
 
 #Reconhecedores
 def eh_peca(p):
+    if not isinstance(p, dict):
+        return False
     if "p" not in p:
         return False
     return isinstance(p, dict) and p["p"] in (-1, 0, 1) \
@@ -135,6 +138,8 @@ def eh_peca(p):
 #Teste
 
 def pecas_iguais(p1, p2):
+    if not (eh_peca(p1) and eh_peca(p2)):
+        return False
     return p1 == p2
 
 #Transformador
@@ -189,11 +194,11 @@ def obter_vetor(t, vect):
     if vect in cols:
         #vect_posicoes = Vetor com as posicoes do vetor pedido)
         vect_posicoes = [cria_posicao(vect, l) for l in linhas]
-        debug_msgs("obter_vetor | vect_posicoes = {}".format(vect_posicoes))
+        #dbg_msgs("obter_vetor | vect_posicoes = {}".format(vect_posicoes))
     #Caso do vetor pedido ser linha
     else:
         vect_posicoes = [cria_posicao(c, vect) for c in cols]
-        debug_msgs("obter_vetor | vect_posicoes = {}".format(vect_posicoes))
+       # dbg_msgs("obter_vetor | vect_posicoes = {}".format(vect_posicoes))
     
     for pos in vect_posicoes:
         rslt = rslt + (t[posicao_para_str(pos)],)
@@ -214,20 +219,21 @@ def move_peca(tab, pos1, pos2):
     return tab
 
 #Reconhecedores
-
+    
 def eh_tabuleiro(t):
     #Verificar se t eh dicionario de 9 elementos
-    if not isinstance(t, dict) and len(t) == 9:
+    #dbg_msgs("eh_tabuleiro|t ={}".format(t))
+    if not isinstance(t, dict):
         return False
+    if len(t) != 9:
+        return False
+
     count_x, count_o = 0,0
 
     for pos in obter_todas_posicoes():
         str_pos = posicao_para_str(pos)
         peca = t[str_pos]
         if not(str_pos in t and eh_peca(peca)):
-            debug_msgs("eh_tabuleiro | str_pos in t: {}".format(str(str_pos in t)))
-            debug_msgs("eh_tabuleiro | eh_peca(peca): {}".format(str(eh_peca(peca))))
-            debug_msgs("eh_tabuleiro | peca = : {}".format(peca))
             return False
         else:
             str_peca = peca_para_str(peca)
@@ -235,15 +241,18 @@ def eh_tabuleiro(t):
                 count_x += 1
             elif str_peca == "[O]":
                 count_o += 1
-        if abs(count_o - count_x) >= 2:
+        if abs(count_o - count_x) >= 2 or count_o > 3 or count_x > 3:
             return False
+    return len(obter_ganhadores_aux(t)) == 1
 
 
-    return True
-
+def eh_posicao_livre(t, p):
+    return obter_peca(t, p) == cria_peca(" ")
 #Teste
 
 def tabuleiros_iguais(t1, t2):
+    if not(eh_tabuleiro(t1) and eh_tabuleiro(t2)):
+        return False
     return t1 == t2
 
 #funcao auxiliar
@@ -256,13 +265,12 @@ def tabuleiro_para_str(t):
    | \ | / |
 2 {}-{}-{}
    | / | \ |
-3 {}-{}-{}
-"""
+3 {}-{}-{}"""
     pecas_ordenadas = []
     for pos in obter_todas_posicoes():
         pecas_ordenadas.append(peca_para_str(obter_peca(t, pos)))
     pecas_ordenadas = tuple(pecas_ordenadas)
-    debug_msgs("tabuleiro_para_str | pecas_ordenadas = {}".format(pecas_ordenadas))
+#    dbg_msgs("tabuleiro_para_str | pecas_ordenadas = {}".format(pecas_ordenadas))
     tabstr = tabstr.format(*pecas_ordenadas)
     return tabstr
 
@@ -286,20 +294,29 @@ def tuplo_para_tabuleiro(tpl):
 
         i+=1
     return t
-
-def obter_ganhador(t):
+#funcao auxiliar
+def obter_ganhadores_aux(t):
     tpl_cols = ("a","b","c")
     tpl_linhas = ("1","2","3")
     linhas = [obter_vetor(t, l) for l in tpl_linhas]
     cols = [obter_vetor(t, c) for c in tpl_cols]
-
+    ganhadores = []
+    peca_vazia = cria_peca(" ")
     for linha in linhas:
-        if linha[0] == linha[1] == linha[2]:
-            return linha[0]
+        if linha[0] == linha[1] == linha[2] and linha[0] != peca_vazia:
+            if linha[0] not in ganhadores:
+                ganhadores.append(linha[0])
     for col in cols:
-        if col[0] == col[1] == col[2]:
-            return col[0]
-    return cria_peca(" ")
+        if col[0] == col[1] == col[2] and linha[0] != peca_vazia:
+            if col[0] not in ganhadores:
+                ganhadores.append(linha[0])
+    if ganhadores == []:
+        return [peca_vazia]
+    else:
+        return ganhadores
+
+def obter_ganhador(t):
+    return obter_ganhadores_aux(t)[0]
 
 #funcao auxiliar
 def obter_posicoes_peca(t, peca):
@@ -316,15 +333,43 @@ def obter_posicoes_livres(t):
 def obter_posicoes_jogador(t, j):
     return obter_posicoes_peca(t, j)
 
-#------------------------Funcoes adicionais------------------´
+#------------------------Funcoes adicionais------------------
 
 #Funcao auxiliar
-def obter_nr_pecas(t, peca):
-    for pos in obter_todas_posicoes():
-        if obter_peca(t, pos) == 
+def eh_vetor(vect):
+    cols = ("a","b","c")
+    linhas = ("1","2","3")
+    return ((vect[0] in cols or vect[0] in linhas) and \
+        (vect[1] in cols or vect[1] in linhas))
 
 def obter_movimento_manual(t, peca):
+    #Verificar se todas as pecas foram colocadas
+    if len(obter_posicoes_jogador(t, cria_peca("X"))) == 3 \
+        and len(obter_posicoes_jogador(t, cria_peca(("O")))) == 3:
+        mov = input("Turno do jogador. Escolha um movimento: ")
+        pos1,pos2 = mov[:2], mov[2:]
 
+        #Validar se podemos invocar cria_posicao com estas posicoes
+        if not eh_vetor(pos1) and eh_vetor(pos2):
+            raise ValueError("obter_movimento_manual: escolha invalida")
+        #Se chegahmos aqui entao criar posicoes
+        pos1 = cria_posicao(pos1[0], pos1[1])
+        pos2 = cria_posicao(pos2[0], pos2[1])
 
-#delete later
-debug_vars()
+        dbg_msgs("obter_movimento_manual | {} {}".format(pos1,pos2))
+
+        #Validar se a escolha eh valida
+        if not (pos2 in obter_posicoes_adjacentes(pos1) and \
+                obter_peca(t, pos1) == peca and \
+                     obter_peca(t, pos2) == cria_peca(" ")):
+            raise ValueError("obter_movimento_manual: escolha invalida")
+
+    else:
+        mov = input("Turno do jogador: Escolha uma posicao: ")
+        if not eh_vetor(mov):
+            raise ValueError("obter_movimento_manual: escolha invalida")
+def obter_movimento_auto():
+    return
+
+def moinho():
+    return
