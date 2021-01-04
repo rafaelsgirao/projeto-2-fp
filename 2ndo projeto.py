@@ -1,9 +1,9 @@
-debug = True
+debug = False
 def debug_vars():
     global debug
     if debug:
         global t
-        tpl = ((1, -1, 0), (0, -1, 1), (1, 0, -1))
+        tpl = ((1, -1, 0), (0, -1, 1), (-1, 0, 1))
         t = tuplo_para_tabuleiro(tpl)
 
 
@@ -27,44 +27,44 @@ def indice_para_pos(ind):
 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$CRITERIOS DO OBTER_POSICAO_AUTO$$$$$$$$$$$$$$$$$$$
     #Criterio 1e2: Vitoria ou bloqueio de vitoria
-    def crit_1e2(t, jgdr, linhas, cols):
-        i = 0
-        for linha in linhas:
-            if linha.count(jgdr) == 2:
-                for p in linha:
-                    if pecas_iguais(p, jgdr):
-                        return indice_para_pos(i)
-                    i+=1
-            else:
-                i+=3
-        for col in cols:
-            if col.count(jgdr) == 2:            
-                for p in col:
-                    if pecas_iguais(p, jgdr):
-                        return indice_para_pos(i)
-                    i+=1
-            else:
-                i+=3   
+def crit_1e2(t, jgdr, linhas, cols):
+    i = 0
+    for linha in linhas:
+        if linha.count(jgdr) == 2:
+            for p in linha:
+                if pecas_iguais(p, jgdr):
+                    return indice_para_pos(i)
+                i+=1
+        else:
+            i+=3
+    for col in cols:
+        if col.count(jgdr) == 2:            
+            for p in col:
+                if pecas_iguais(p, jgdr):
+                    return indice_para_pos(i)
+                i+=1
+        else:
+            i+=3   
     
-    def crit_3(t):
-        centro = cria_posicao("b", "2")
-        if obter_peca(t, centro) == cria_peca(" "):
-            return centro
-    def crit_4(t):    
-        cantos = [cria_posicao(c, l) for l in "13" for c in "ac"]
-        for c in cantos:
-            if obter_peca(t, c) == cria_peca(" "):
-                return c 
-    def crit_5(t):
-        #Escolheu-se nao obter as laterais programaticamente porque
-        #diminui bastante a complexidade deste criterio
-        posicoes = ["b1", "a2", "c2", "b3"]
-        posicoes = [cria_posicao(*pos) for pos in posicoes]
-        for pos in posicoes:
-            if pecas_iguais(obter_peca(pos), cria_peca()):
-                return pos
-    def crit_6(t):
-        return
+def crit_3(t):
+    centro = cria_posicao("b", "2")
+    if obter_peca(t, centro) == cria_peca(" "):
+        return centro
+def crit_4(t):    
+    cantos = [cria_posicao(c, l) for l in "13" for c in "ac"]
+    for c in cantos:
+        if obter_peca(t, c) == cria_peca(" "):
+            return c 
+def crit_5(t):
+    #Escolheu-se nao obter as laterais programaticamente porque
+    #diminui bastante a complexidade deste criterio
+    posicoes = ["b1", "a2", "c2", "b3"]
+    posicoes = [cria_posicao(*pos) for pos in posicoes]
+    for pos in posicoes:
+        if pecas_iguais(obter_peca(pos), cria_peca()):
+            return pos
+def crit_6(t):
+    return
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$ EOF CRITERIOS $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 def obter_posicao_auto(t, jgdr):
 
@@ -73,22 +73,18 @@ def obter_posicao_auto(t, jgdr):
     cols = [obter_vetor(t, c) for c in "abc"]
     livres = obter_posicoes_livres(t)
 
-        
-
-
-        
-
-    
-    
 #------------------------TAD posicao (1.5 valores)------------------
 
 #Construtores
 
-def cria_posicao(c, l):
-    if not(c in "abc" and l in "123"):
-        raise ValueError("cria_posicao: argumentos invalidos")
-    
-    return {"c": c, "l":l}
+def cria_posicao(c, l): 
+ 
+    cols = ("a","b","c") 
+    linhas = ("1","2","3") 
+    if not(c in cols and l in linhas): 
+        raise ValueError("cria_posicao: argumentos invalidos") 
+     
+    return {"c": c, "l":l} 
 
 def cria_copia_posicao(p):
     if not eh_posicao(p):
@@ -102,11 +98,11 @@ def obter_pos_c(p):
 def obter_pos_l(p):
     return p["l"]
 
-#Reconhecedores
-def eh_posicao(p):
+#Reconhecedores 
+def eh_posicao(p): 
     return isinstance(p, dict) and "c" in p and "l" in p and \
-        p["c"] in "abc" and \
-        p["l"] in "123" and len(p) == 2
+        p["c"] in ("a","b","c") and \
+        p["l"] in ("1","2","3") and len(p) == 2
 
 #Teste
 def posicoes_iguais(p1, p2):
@@ -121,7 +117,7 @@ def posicao_para_str(p):
 #Funcao auxiliar: Retorna todas as posicoes existentes
 
 def obter_todas_posicoes():
-    return [cria_posicao(c,l) for l in "abc" for c in "123"]
+    return [cria_posicao(c,l) for l in "123" for c in "abc"]
     
 #Funcao de alto nivel
 
@@ -242,16 +238,17 @@ def obter_peca(t, pos):
     return t[posicao_para_str(pos)]
 
 def obter_vetor(t, vect):
-
+    cols = "abc"
+    linhas = "123"
     rslt = ()
     #Caso do vetor pedido ser coluna
     if vect in cols:
         #vect_posicoes = Vetor com as posicoes do vetor pedido)
-        vect_posicoes = [cria_posicao(vect, l) for l in "123"]
+        vect_posicoes = [cria_posicao(vect, l) for l in linhas]
         #dbg_msgs("obter_vetor | vect_posicoes = {}".format(vect_posicoes))
     #Caso do vetor pedido ser linha
     else:
-        vect_posicoes = [cria_posicao(c, vect) for c in "abc"]
+        vect_posicoes = [cria_posicao(c, vect) for c in cols]
        # dbg_msgs("obter_vetor | vect_posicoes = {}".format(vect_posicoes))
     
     for pos in vect_posicoes:
@@ -349,6 +346,7 @@ def tuplo_para_tabuleiro(tpl):
         coloca_peca(t, peca, posicoes[i])
         i+=1
     return t
+    
 #funcao auxiliar
 def obter_ganhadores_aux(t):
     linhas = [obter_vetor(t, l) for l in "123"]
@@ -400,9 +398,15 @@ def obter_peca_oponente(peca):
     elif repr == "[O]":
         return cria_peca("X")
     return cria_peca(" ")
-def obter_livres_adjacentes(t, peca, pos):
-    livres = obter_posicoes_livres()
-    adjacentes = obter_posicoes_adjacentes(peca)
+
+def obter_livres_adjacentes(t, pos):
+    livres = obter_posicoes_livres(t)
+    adjacentes = obter_posicoes_adjacentes(pos)
+    rslt = []
+    for pos in adjacentes:
+        if pos in livres:
+            rslt.append(pos)
+    return rslt
 
 def obter_movimento_manual(t, peca):
     erro = "obter_movimento_manual: escolha invalida"
@@ -416,12 +420,15 @@ def obter_movimento_manual(t, peca):
         #Se chegahmos aqui entao criar posicoes
         pos1 = cria_posicao(pos1[0], pos1[1])
         pos2 = cria_posicao(pos2[0], pos2[1])
-        livres = [pos for pos in obter_posicoes_livres(t)]
+        dbg_msgs("obter_peca(t, pos1)={}".format(obter_peca(t, pos1)))
+        dbg_msgs("peca={}".format(peca))
+
+        livres = obter_livres_adjacentes(t,pos1)
         #Validar se a escolha eh valida
         adjacentes = obter_posicoes_adjacentes(pos1)
-        if not ((pos2 in adjacentes or (pos1 == pos2) and \
+        if not ((pos2 in adjacentes or (pos1 == pos2 and livres == [])) and \
               obter_peca(t, pos1) == peca and \
-                    obter_peca(t, pos2) != obter_peca_oponente(peca))):
+                    obter_peca(t, pos2) != obter_peca_oponente(peca)):
             raise ValueError(erro)
         
         return (pos1, pos2)
@@ -434,14 +441,14 @@ def obter_movimento_manual(t, peca):
         
         return (pos,)
 
-def obter_movimento_auto():
+def obter_movimento_auto(t, jgdr, modo):
     return
 
 def moinho(jgdr, modo):
     if not (len(jgdr) == 3 and jgdr[1] in "XO" and \
         modo in ("facil", "normal", "dificil")):
         raise ValueError("moinho: agumentos invalidos")
-    print("Bem vindo ao JOGO DO  MOINHO. Nivel de dificuldade {}".format(modo))
+    print("Bem-vindo ao JOGO DO MOINHO. Nivel de dificuldade {}.".format(modo))
     t = cria_tabuleiro()
     print_tab(t)
     print()
@@ -462,7 +469,7 @@ def moinho(jgdr, modo):
             print_tab(t)
             turno_jgdr = False
         else:
-            print("Turno do computador ({})".format(modo))
+            print("Turno do computador ({}):".format(modo))
             print_tab(t)
             turno_jgdr=True
         
