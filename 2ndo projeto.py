@@ -1,17 +1,3 @@
-debug = False
-def debug_vars():
-    global debug
-    if debug:
-        global t
-        tpl = ((1, -1, 0), (0, -1, 1), (-1, 0, 1))
-        t = tuplo_para_tabuleiro(tpl)
-
-
-def dbg_msgs(input):
-    global debug
-    if debug:
-        print(input)
-
 #ist199309 Rafael Girao - Projeto 2 de FP
 
 
@@ -91,7 +77,6 @@ def obter_posicoes_adjacentes(p):
             rslt.append(cria_posicao(c, "3"))
 
         if c != "b" and l != "2":
-           # dbg_msgs("c = {} and l = {}".format(c, l))
             rslt.append(centro)
 
         #Ordenar o resultado (rslt_ordenado = resultado ordenado)
@@ -188,11 +173,9 @@ def obter_vetor(t, vect):
     if vect in cols:
         #vect_posicoes = Vetor com as posicoes do vetor pedido)
         vect_posicoes = [cria_posicao(vect, l) for l in linhas]
-        #dbg_msgs("obter_vetor | vect_posicoes = {}".format(vect_posicoes))
     #Caso do vetor pedido ser linha
     else:
         vect_posicoes = [cria_posicao(c, vect) for c in cols]
-       # dbg_msgs("obter_vetor | vect_posicoes = {}".format(vect_posicoes))
     
     for pos in vect_posicoes:
         rslt = rslt + (t[posicao_para_str(pos)],)
@@ -219,7 +202,6 @@ def move_peca(t, pos1, pos2):
     
 def eh_tabuleiro(t):
     #Verificar se t eh dicionario de 9 elementos
-    #dbg_msgs("eh_tabuleiro|t ={}".format(t))
     if not isinstance(t, dict):
         return False
     if len(t) != 9:
@@ -266,7 +248,7 @@ def tabuleiro_para_str(t):
     pecas_ordenadas = []
     for pos in obter_todas_posicoes():
         pecas_ordenadas.append(peca_para_str(obter_peca(t, pos)))
-    return tabstr.format(pecas_ordenadas)
+    return tabstr.format(*tuple(pecas_ordenadas))
 
 
     
@@ -360,8 +342,6 @@ def obter_movimento_manual(t, peca):
         #Se chegahmos aqui entao criar posicoes
         pos1 = cria_posicao(pos1[0], pos1[1])
         pos2 = cria_posicao(pos2[0], pos2[1])
-        dbg_msgs("obter_peca(t, pos1)={}".format(obter_peca(t, pos1)))
-        dbg_msgs("peca={}".format(peca))
 
         livres = obter_livres_adjacentes(t,pos1)
         #Validar se a escolha eh valida
@@ -381,10 +361,34 @@ def obter_movimento_manual(t, peca):
         
         return (pos,)
 
-def minimax(t, jgdr, profnd, seq_movs): 
-    if obter_ganhador(t) != cria_peca(" ") or profnd == 0: 
-        return(obter_ganhador(t),) 
- 
+def minimax(t, jgdr, profundidade, seq_movimentos):
+    ganhador = obter_ganhador(t)
+    oponente = obter_peca_oponente(jgdr)
+    #Reprint_jgdr = representacao inteira do jogador
+    reprint_jgdr = peca_para_inteiro(jgdr)
+    if ganhador != obter_peca(" ") or profundidade == 0:
+        #valor_tabuleiro eh pegar no obter_ganhador e converter p/ int
+        return (peca_para_inteiro(ganhador), seq_movimentos)
+    #end
+    else:
+        #A assumir que melhor_resultado = repr inteira do adversario?
+        melhor_resultado = peca_para_inteiro(oponente)
+        livres = obter_posicoes_livres(t)
+        for pos_jgdr in obter_posicoes_jogador(t, jgdr):
+            for pos_adj in obter_posicoes_adjacentes(pos_jgdr):
+                if pos_adj in livres:
+                    copia_tab = cria_copia_tabuleiro(t) #ver se eh shallow copy ou nao
+                    novo_movimento = [pos_jgdr, pos_adj] #ver se tenho q criar copia
+                    move_peca(copia_tab, *novo_movimento)
+                    novo_resultado, nova_seq_movimentos= \
+                        minimax(copia_tab, oponente, profundidade-1, seq_movimentos)
+                    if (not melhor_seq_movimentos) or \
+    (reprint_jgdr == cria_peca("X") and novo_resultado > melhor_resultado) or \
+    (reprint_jgdr == cria_peca("O") and novo_resultado < melhor_resultado):
+                        melhor_resultado, melhor_seq_movimentos = novo_resultado, nova_seq_movimentos
+
+        return melhor_resultado, melhor_seq_movimentos
+
 def indice_para_pos(ind): 
     i = 0 
     for pos in obter_todas_posicoes(): 
@@ -433,15 +437,22 @@ def crit_5(t):
 def crit_6(t): 
     return 
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$ EOF CRITERIOS $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ 
-def obter_posicao_auto(t, jgdr): 
- 
-    #Algoritmo traduzido a partir dos criterios do 1o projeto 
-    linhas = [obter_vetor(t, l) for l in "123"] 
-    cols = [obter_vetor(t, c) for c in "abc"] 
-    livres = obter_posicoes_livres(t) 
+
  
 def obter_movimento_auto(t, jgdr, modo):
-    return
+    peca_vazia = cria_peca(" ")
+    if len(obter_posicoes_jogador(t, jgdr)) == 3:
+        #Fase de movimento
+        if modo == "facil":
+            for pos in obter_posicoes_jogador(t, jgdr):
+                for livre_adj in obter_livres_adjacentes(t, pos):
+                    return livre_adj
+
+
+def teste():
+    a = [[],["banana"]]
+    for i in a:
+        print(i)
 
 def moinho(jgdr, modo):
     if not (len(jgdr) == 3 and jgdr[1] in "XO" and \
@@ -461,7 +472,6 @@ def moinho(jgdr, modo):
         if turno_jgdr:
             mov = obter_movimento_manual(t, jgdr)
             if len(mov) == 1:
-            #dbg_msgs("moinho_dbg:\nt={}\njgdr={}\nmov={}".format(t,jgdr,mov))
                 coloca_peca(t, jgdr, mov[0])
             else:
                 move_peca(t, mov[0], mov[1])
@@ -475,5 +485,3 @@ def moinho(jgdr, modo):
         ganhador = obter_ganhador(t)
         if obter_ganhador(t) != cria_peca(" "):
             return ganhador
-
-debug_vars()
