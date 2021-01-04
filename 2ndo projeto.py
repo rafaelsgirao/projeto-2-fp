@@ -6,7 +6,7 @@ def debug_vars():
 
         pos1 = cria_posicao("b", "2")
         pos2 = cria_posicao("b", "3")
-        tpl = ((0, 1, -1), (-0, 1, -1), (1, 0, -1))
+        tpl = ((1, -1, 0), (-1, 0, 1), (0, -1, 1))
         t = tuplo_para_tabuleiro(tpl)
 
 
@@ -212,11 +212,14 @@ def remove_peca(tab, pos):
     tab[posicao_para_str(pos)] = cria_peca(" ")
     return tab
 
-def move_peca(tab, pos1, pos2):
+def move_peca(t, pos1, pos2):
+
     str_pos1, str_pos2 = posicao_para_str(pos1), posicao_para_str(pos2)
-    tab[str_pos2] = tab[str_pos1]
-    tab[str_pos1] = cria_peca("")
-    return tab
+    peca = t[str_pos1]
+    t[str_pos1] = cria_peca(" ")
+    t[str_pos2] = peca
+
+    return t
 
 #Reconhecedores
     
@@ -270,7 +273,7 @@ def tabuleiro_para_str(t):
     for pos in obter_todas_posicoes():
         pecas_ordenadas.append(peca_para_str(obter_peca(t, pos)))
     pecas_ordenadas = tuple(pecas_ordenadas)
-#    dbg_msgs("tabuleiro_para_str | pecas_ordenadas = {}".format(pecas_ordenadas))
+#  dbg_msgs("tabuleiro_para_str | pecas_ordenadas = {}".format(pecas_ordenadas))
     tabstr = tabstr.format(*pecas_ordenadas)
     return tabstr
 
@@ -309,7 +312,7 @@ def obter_ganhadores_aux(t):
     for col in cols:
         if col[0] == col[1] == col[2] and linha[0] != peca_vazia:
             if col[0] not in ganhadores:
-                ganhadores.append(linha[0])
+                ganhadores.append(col[0])
     if ganhadores == []:
         return [peca_vazia]
     else:
@@ -357,19 +360,22 @@ def obter_movimento_manual(t, peca):
         pos2 = cria_posicao(pos2[0], pos2[1])
 
         dbg_msgs("obter_movimento_manual | {} {}".format(pos1,pos2))
-
+        peca_vazia = cria_peca(" ")
         #Validar se a escolha eh valida
         if not (pos2 in obter_posicoes_adjacentes(pos1) and \
                 obter_peca(t, pos1) == peca and \
-                     obter_peca(t, pos2) == cria_peca(" ")):
+                     obter_peca(t, pos2) == peca_vazia):
             raise ValueError("obter_movimento_manual: escolha invalida")
 
     else:
         mov = input("Turno do jogador: Escolha uma posicao: ")
         if not eh_vetor(mov):
             raise ValueError("obter_movimento_manual: escolha invalida")
+        
 def obter_movimento_auto():
     return
 
 def moinho():
     return
+
+debug_vars()
