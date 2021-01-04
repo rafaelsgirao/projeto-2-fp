@@ -14,64 +14,7 @@ def dbg_msgs(input):
 
 #ist199309 Rafael Girao - Projeto 2 de FP
 
-def minimax(t, jgdr, profnd, seq_movs):
-    if obter_ganhador(t) != cria_peca(" ") or profnd == 0:
-        return(obter_ganhador(t),)
 
-def indice_para_pos(ind):
-    i = 0
-    for pos in obter_todas_posicoes():
-        if i == ind:
-            return pos
-        i+=1
-
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$CRITERIOS DO OBTER_POSICAO_AUTO$$$$$$$$$$$$$$$$$$$
-    #Criterio 1e2: Vitoria ou bloqueio de vitoria
-def crit_1e2(t, jgdr, linhas, cols):
-    i = 0
-    for linha in linhas:
-        if linha.count(jgdr) == 2:
-            for p in linha:
-                if pecas_iguais(p, jgdr):
-                    return indice_para_pos(i)
-                i+=1
-        else:
-            i+=3
-    for col in cols:
-        if col.count(jgdr) == 2:            
-            for p in col:
-                if pecas_iguais(p, jgdr):
-                    return indice_para_pos(i)
-                i+=1
-        else:
-            i+=3   
-    
-def crit_3(t):
-    centro = cria_posicao("b", "2")
-    if obter_peca(t, centro) == cria_peca(" "):
-        return centro
-def crit_4(t):    
-    cantos = [cria_posicao(c, l) for l in "13" for c in "ac"]
-    for c in cantos:
-        if obter_peca(t, c) == cria_peca(" "):
-            return c 
-def crit_5(t):
-    #Escolheu-se nao obter as laterais programaticamente porque
-    #diminui bastante a complexidade deste criterio
-    posicoes = ["b1", "a2", "c2", "b3"]
-    posicoes = [cria_posicao(*pos) for pos in posicoes]
-    for pos in posicoes:
-        if pecas_iguais(obter_peca(pos), cria_peca()):
-            return pos
-def crit_6(t):
-    return
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$ EOF CRITERIOS $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-def obter_posicao_auto(t, jgdr):
-
-    #Algoritmo traduzido a partir dos criterios do 1o projeto
-    linhas = [obter_vetor(t, l) for l in "123"]
-    cols = [obter_vetor(t, c) for c in "abc"]
-    livres = obter_posicoes_livres(t)
 
 #------------------------TAD posicao (1.5 valores)------------------
 
@@ -323,10 +266,7 @@ def tabuleiro_para_str(t):
     pecas_ordenadas = []
     for pos in obter_todas_posicoes():
         pecas_ordenadas.append(peca_para_str(obter_peca(t, pos)))
-    pecas_ordenadas = tuple(pecas_ordenadas)
-#  dbg_msgs("tabuleiro_para_str | pecas_ordenadas = {}".format(pecas_ordenadas))
-    tabstr = tabstr.format(*pecas_ordenadas)
-    return tabstr
+    return tabstr.format(pecas_ordenadas)
 
 
     
@@ -441,6 +381,65 @@ def obter_movimento_manual(t, peca):
         
         return (pos,)
 
+def minimax(t, jgdr, profnd, seq_movs): 
+    if obter_ganhador(t) != cria_peca(" ") or profnd == 0: 
+        return(obter_ganhador(t),) 
+ 
+def indice_para_pos(ind): 
+    i = 0 
+    for pos in obter_todas_posicoes(): 
+        if i == ind: 
+            return pos 
+        i+=1 
+ 
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$CRITERIOS DO OBTER_POSICAO_AUTO$$$$$$$$$$$$$$$$$$$ 
+    #Criterio 1e2: Vitoria ou bloqueio de vitoria 
+def crit_1e2(t, jgdr, linhas, cols): 
+    i = 0 
+    for linha in linhas: 
+        if linha.count(jgdr) == 2: 
+            for p in linha: 
+                if pecas_iguais(p, jgdr): 
+                    return indice_para_pos(i) 
+                i+=1 
+        else: 
+            i+=3 
+    for col in cols: 
+        if col.count(jgdr) == 2:             
+            for p in col: 
+                if pecas_iguais(p, jgdr): 
+                    return indice_para_pos(i) 
+                i+=1 
+        else: 
+            i+=3    
+     
+def crit_3(t): 
+    centro = cria_posicao("b", "2") 
+    if obter_peca(t, centro) == cria_peca(" "): 
+        return centro 
+def crit_4(t):     
+    cantos = [cria_posicao(c, l) for l in "13" for c in "ac"] 
+    for c in cantos: 
+        if obter_peca(t, c) == cria_peca(" "): 
+            return c  
+def crit_5(t): 
+    #Escolheu-se nao obter as laterais programaticamente porque 
+    #diminui bastante a complexidade deste criterio 
+    posicoes = ["b1", "a2", "c2", "b3"] 
+    posicoes = [cria_posicao(*pos) for pos in posicoes] 
+    for pos in posicoes: 
+        if pecas_iguais(obter_peca(pos), cria_peca()): 
+            return pos 
+def crit_6(t): 
+    return 
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$ EOF CRITERIOS $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ 
+def obter_posicao_auto(t, jgdr): 
+ 
+    #Algoritmo traduzido a partir dos criterios do 1o projeto 
+    linhas = [obter_vetor(t, l) for l in "123"] 
+    cols = [obter_vetor(t, c) for c in "abc"] 
+    livres = obter_posicoes_livres(t) 
+ 
 def obter_movimento_auto(t, jgdr, modo):
     return
 
