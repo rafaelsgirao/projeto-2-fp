@@ -1,13 +1,29 @@
 #ist199309 Rafael Girao - Projeto 2 de FP
 
 
+#TAD posicao
+# Representacao interna: dicionario de duas chaves "c" e "l", sendo os seus
+#valores possiveis "a","b","c" e "1","2","3";respetivamente
+# cria_posicao: str x str -> posicao
+# cria_copia_posicao: posicao -> posicao
+# eh_pos_c: posicao -> str
+# eh_pos_l: posicao -> str
+# eh_posicao: universal -> booleano
+# posicoes_iguais: posicao x posicao -> booleano
+# posicao_para_str: posicao -> str
+# obter_posicoes_adjacentes: posicao -> tuplo de posicoes
 
-#------------------------TAD posicao (1.5 valores)------------------
-
-#Construtores
 
 def cria_posicao(c, l): 
- 
+    """str x str -> posicao
+
+    cria posicao(c,l) recebe duas cadeias de carateres correspondentes 
+    a coluna c e a linha l de uma posicao e devolve a posicao correspondente.
+
+    O construtor verifica a validade dos seus argumentos, gerando um ValueError
+    com a mensagem "cria posicao: argumentos invalidos" caso os seus argumentos
+    nao sejam validos.
+"""
     cols = ("a","b","c") 
     linhas = ("1","2","3") 
     if not(c in cols and l in linhas): 
@@ -16,12 +32,19 @@ def cria_posicao(c, l):
     return {"c": c, "l":l} 
 
 def cria_copia_posicao(p):
+    """cria copia posicao(p) recebe uma posicao e devolve 
+    uma copia nova da posicao.
+    O construtor verifica a validade dos seus argumentos, gerando um ValueError
+    caso os seus argumentos nao sejam validos.
+"""
     if not eh_posicao(p):
         raise ValueError("cria_posicao: argumentos invalidos")
     return p.copy()
 
 #Seletores
 def obter_pos_c(p):
+    """
+"""
     return p["c"]
 
 def obter_pos_l(p):
@@ -50,7 +73,7 @@ def obter_todas_posicoes():
     
 #Funcao de alto nivel
 
-#Done, i guess
+
 def obter_posicoes_adjacentes(p):
 
     c, l = obter_pos_c(p), obter_pos_l(p)
@@ -89,7 +112,14 @@ def obter_posicoes_adjacentes(p):
    
 
 
-#------------------------TAD peca (1.5 valores)------------------
+#TAD peca
+# Representacao interna: dicionario com uma unica chave "p", sendo o seu
+#valor um inteiro (1, -1 ou 0)
+# cria_peca: str -> peca
+# eh_peca: universal -> peca
+# pecas_iguais: peca x peca -> booleano
+# peca_para_str: peca -> str
+# peca_para_inteiro: peca -> Z
 
 #Construtores
 def cria_peca(p):
@@ -145,7 +175,24 @@ def peca_para_inteiro(p):
     elif peca == "[ ]":
         return 0
     
-#------------------------TAD tabuleiro (3 valores)------------------
+#TAD tabuleiro
+# Representacao interna: Dicionario de 9 chaves, sendo estas as representacoes
+#externas de todas as posicoes possiveis. Tomam como valores o TAD peca.
+# cria_tabuleiro: {} -> tabuleiro
+# cria_copia_tabuleiro: tabuleiro -> tabuleiro
+# obter_peca: tabuleiro x posicao -> peca
+# obter_vetor: tabuleiro x str -> tuplo de pecas
+# coloca_peca: tabuleiro x peca x posicao -> tabuleiro
+# remove_peca: tabuleiro x posicao -> tabuleiro
+# move_peca: tabuleiro x posicao x posicao -> tabuleiro
+# eh_tabuleiro: universal -> booleano
+# eh_posicao_livre: tabuleiro x posicao -> booleano
+# tabuleiros_iguais: tabuleiro x tabuleiro -> booleano
+# tabuleiro_para_str: tabuleiro -> str
+# tuplo_para_tabuleiro: tuplo -> tabuleiro
+# obter_ganhador: tabuleiro -> peca
+# obter_posicoes_livres: tabuleiro -> tuplo de posicoes
+# obter_posicoes_jogador: tabuleiro x peca -> tuplo de posicoes
 
 #Construtores
 def cria_tabuleiro():
@@ -157,7 +204,8 @@ def cria_tabuleiro():
 
 def cria_copia_tabuleiro(t):
     if not eh_tabuleiro(t):
-        raise ValueError("cria_copia_tabuleiro: argumento invalido")
+        print(t)
+        #raise ValueError("cria_copia_tabuleiro: argumento invalido")
     return t.copy()
     
 #Seletores
@@ -220,8 +268,8 @@ def eh_tabuleiro(t):
                 count_x += 1
             elif str_peca == "[O]":
                 count_o += 1
-        if abs(count_o - count_x) >= 2 or count_o > 3 or count_x > 3:
-            return False
+    if abs(count_o - count_x) >= 2 or count_o > 3 or count_x > 3:
+        return False
     return len(obter_ganhadores_aux(t)) == 1
 
 
@@ -364,9 +412,10 @@ def obter_movimento_manual(t, peca):
 def minimax(t, jgdr, profundidade, seq_movimentos):
     ganhador = obter_ganhador(t)
     oponente = obter_peca_oponente(jgdr)
+    melhor_seq_movimentos = None
     #Reprint_jgdr = representacao inteira do jogador
     reprint_jgdr = peca_para_inteiro(jgdr)
-    if ganhador != obter_peca(" ") or profundidade == 0:
+    if ganhador != cria_peca(" ") or profundidade == 0:
         #valor_tabuleiro eh pegar no obter_ganhador e converter p/ int
         return (peca_para_inteiro(ganhador), seq_movimentos)
     #end
@@ -381,11 +430,12 @@ def minimax(t, jgdr, profundidade, seq_movimentos):
                     novo_movimento = [pos_jgdr, pos_adj] #ver se tenho q criar copia
                     move_peca(copia_tab, *novo_movimento)
                     novo_resultado, nova_seq_movimentos= \
-                        minimax(copia_tab, oponente, profundidade-1, seq_movimentos)
-                    if (not melhor_seq_movimentos) or \
+                        minimax(copia_tab, oponente, profundidade-1, seq_movimentos + novo_movimento)
+                    if not(melhor_seq_movimentos) or \
     (reprint_jgdr == cria_peca("X") and novo_resultado > melhor_resultado) or \
     (reprint_jgdr == cria_peca("O") and novo_resultado < melhor_resultado):
-                        melhor_resultado, melhor_seq_movimentos = novo_resultado, nova_seq_movimentos
+                        melhor_resultado, melhor_seq_movimentos = \
+                            novo_resultado, nova_seq_movimentos
 
         return melhor_resultado, melhor_seq_movimentos
 
@@ -400,22 +450,23 @@ def indice_para_pos(ind):
     #Criterio 1e2: Vitoria ou bloqueio de vitoria 
 def crit_1e2(t, jgdr, linhas, cols): 
     i = 0 
+    peca_vazia = cria_peca(" ")
     for linha in linhas: 
         if linha.count(jgdr) == 2: 
             for p in linha: 
-                if pecas_iguais(p, jgdr): 
+                if pecas_iguais(p, peca_vazia): 
                     return indice_para_pos(i) 
                 i+=1 
         else: 
             i+=3 
     for col in cols: 
-        if col.count(jgdr) == 2:             
+        if col.count(jgdr) == 2:
             for p in col: 
-                if pecas_iguais(p, jgdr): 
+                if pecas_iguais(p, peca_vazia): 
                     return indice_para_pos(i) 
                 i+=1 
         else: 
-            i+=3    
+            i+=3
      
 def crit_3(t): 
     centro = cria_posicao("b", "2") 
@@ -440,19 +491,26 @@ def crit_6(t):
 
  
 def obter_movimento_auto(t, jgdr, modo):
+    linhas = [obter_vetor(t, l) for l in "123"]
+    cols = [obter_vetor(t, c) for c in "abc"]
     peca_vazia = cria_peca(" ")
     if len(obter_posicoes_jogador(t, jgdr)) == 3:
         #Fase de movimento
         if modo == "facil":
             for pos in obter_posicoes_jogador(t, jgdr):
                 for livre_adj in obter_livres_adjacentes(t, pos):
-                    return livre_adj
+                    return(pos, livre_adj)
+        elif modo == "normal":
+            return tuple(minimax(t, jgdr, 1, [])[1])
+        elif modo == "dificil":
+            return tuple(minimax(t, jgdr, 5, [])[1])
+    else:
+        #Fase de posicionamento
+        rslt = crit_1e2(t, jgdr, linhas, cols) or \
+            crit_1e2(t, obter_peca_oponente(jgdr), linhas, cols) or \
+                crit_3(t) or crit_4(t) or crit_5(t) or crit_6(t)
+        return (rslt, )
 
-
-def teste():
-    a = [[],["banana"]]
-    for i in a:
-        print(i)
 
 def moinho(jgdr, modo):
     if not (len(jgdr) == 3 and jgdr[1] in "XO" and \
@@ -485,3 +543,6 @@ def moinho(jgdr, modo):
         ganhador = obter_ganhador(t)
         if obter_ganhador(t) != cria_peca(" "):
             return ganhador
+
+
+t = tuplo_para_tabuleiro(((0, -1, -1), (-1, 1, 0), (1, 0, 1)))
