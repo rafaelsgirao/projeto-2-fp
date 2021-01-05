@@ -396,11 +396,13 @@ def tabuleiros_iguais(t1, t2):
         return False
     return t1 == t2
 
-#funcao auxiliar
-def print_tab(t):
-    print(tabuleiro_para_str(t))
 
 def tabuleiro_para_str(t):
+    """tabuleiro -> str
+
+    tabuleiro_para_str(t) devolve a cadeia de caracteres que representa o TAD
+    tabuleiro.
+"""
     tabstr = """   a   b   c
 1 {}-{}-{}
    | \ | / |
@@ -415,6 +417,12 @@ def tabuleiro_para_str(t):
 
     
 def tuplo_para_tabuleiro(tpl):
+    """tuplo -> tabuleiro
+
+    tuplo_para_tabuleiro(t) devolve o tabuleiro que eh representado pelo tuplo t
+    com 3 tuplos, cada um deles contendo 3 valores inteiros iguais a 1, -1 ou 0,
+    tal como no primeiro projeto.
+"""
     t = cria_tabuleiro()
     #Achatar o tuplo recebido
     tpl = [valor for linha in tpl for valor in linha]
@@ -433,49 +441,93 @@ def tuplo_para_tabuleiro(tpl):
     
 #funcao auxiliar
 def obter_ganhadores_aux(t):
+    """tabuleiro -> lista de pecas
+
+    obter_ganhadores_aux(t) devolve uma lista com todos os ganhadores(conforme
+    criterios descritos na obter_ganhador(t)).
+    
+    Obviamente que se esta funcao devolver mais que uma peca na lista o
+    tabuleiro fornecido eh invalido.
+"""
     linhas = [obter_vetor(t, l) for l in "123"]
     cols = [obter_vetor(t, c) for c in "abc"]
     ganhadores = []
     peca_vazia = cria_peca(" ")
+    #Verificar ganhadores nas linhas
     for linha in linhas:
         if linha[0] == linha[1] == linha[2] and linha[0] != peca_vazia:
             if linha[0] not in ganhadores:
                 ganhadores.append(linha[0])
+    #Verificar em colunas
     for col in cols:
         if col[0] == col[1] == col[2] and linha[0] != peca_vazia:
             if col[0] not in ganhadores:
                 ganhadores.append(col[0])
+    #Se nao houve ganhadores, devolver peca vazia
     if ganhadores == []:
         return [peca_vazia]
     else:
         return ganhadores
 
 def obter_ganhador(t):
+    """tabuleiro -> peca
+
+    obter_ganhador(t) devolve uma peca do jogador que tenha as suas 3 pecas em
+    linha na vertical ou na horizontal no tabuleiro. Se nao existir nenhum
+    ganhador, devolve uma peca livre.
+"""
     return obter_ganhadores_aux(t)[0]
 
 #funcao auxiliar
 def obter_posicoes_peca(t, peca):
+    """tabuleiro x peca -> tuplo de posicoes
+
+    obter_posicoes_peca(t) devolve um tuplo com as posicoes ocupadas pelas pecas
+    "peca" na ordem de leitura do tabuleiro.
+"""
     rslt = []
     for pos in obter_todas_posicoes():
         if obter_peca(t, pos) == peca:
             rslt.append(pos)
-
     return tuple(rslt)
 
 def obter_posicoes_livres(t):
+    """tabuleiro -> tuplo de posicoes
+
+    obter_posicoes_livres(t) devolve um tuplo com as posicoes nao ocupadas pelas
+    pecas de qualquer um dos dois jogadores na ordem de leitura do tabuleiro.
+"""
     return obter_posicoes_peca(t, cria_peca(" "))
         
 def obter_posicoes_jogador(t, j):
+    """tabuleiro x peca -> tuplo de posicoes
+
+    obter_posicoes_jogador(t, j) devolve um tuplo com as posicoes ocupadas pelas
+    pecas j de um dos dois jogadores na ordem de leitura do tabuleiro.
+"""
     return obter_posicoes_peca(t, j)
 
 #------------------------Funcoes adicionais------------------
 
 #Funcao auxiliar
 def eh_vetor(vect):
+    """str -> booleano
+
+    eh_vetor(vect) devolve True se vect for um argumento valido de
+    obter_vetor(t, vect), False caso contrario.
+
+    Por outras palavras, devolve True se vect representar uma linha ou coluna
+    de um tabuleiro.
+"""
+
     return (len(vect) == 2 and vect[0] in "abc" and vect[1] in "123")
 
-#funcao auxiliar
+#Funcao auxiliar
 def obter_peca_oponente(peca):
+    """peca -> peca
+
+    obter_peca_oponente(peca) devolve a peca do oponente do jogador.
+"""
     repr = peca_para_str(peca)
     if repr == "[X]":
         return cria_peca("O")
@@ -483,7 +535,13 @@ def obter_peca_oponente(peca):
         return cria_peca("X")
     return cria_peca(" ")
 
+#Funcao auxiliar
 def obter_livres_adjacentes(t, pos):
+    """tabuleiro x posicao -> lista de posicoes
+
+    obter_livres_adjacentes devolve as posicoes que sao adjacentes ah posicao
+    pos e ao mesmo tempo nao estao ocupadas por nenhum dos dois jogadores.
+"""
     livres = obter_posicoes_livres(t)
     adjacentes = obter_posicoes_adjacentes(pos)
     rslt = []
@@ -493,26 +551,31 @@ def obter_livres_adjacentes(t, pos):
     return rslt
 
 def obter_movimento_manual(t, peca):
-    erro = "obter_movimento_manual: escolha invalida"
+    """tabuleiro x peca -> tuplo de posicoes
+
+    Funcao auxiliar que recebe um tabuleiro e uma peca de um jogador, e devolve
+    um tuplo com uma ou duas posicoes que representam uma posicao ou um
+    movimento introduzido manualmente pelo jogador.
+
+    Se o valor introduzido pelo jogador nao corresponder a posicao ou movimento
+    validos, a funcao gera um erro com a mensagem "obter_movimento_manual:
+    escolha invalida".
+"""
+    erro, peca_vazia="obter_movimento_manual: escolha invalida", cria_peca(" ")
     #Verificar se eh fase de movimento ou posicao
-    peca_vazia = cria_peca(" ")
     if len(obter_posicoes_jogador(t, peca)) == 3:
         mov = input("Turno do jogador. Escolha um movimento: ")
         pos1,pos2 = mov[:2], mov[2:]
         #Validar se podemos invocar cria_posicao com estas posicoes
         if not(eh_vetor(pos2) and eh_vetor(pos1)): raise ValueError(erro)
         #Se chegahmos aqui entao criar posicoes
-        pos1 = cria_posicao(pos1[0], pos1[1])
-        pos2 = cria_posicao(pos2[0], pos2[1])
-
-        livres = obter_livres_adjacentes(t,pos1)
+        pos1, pos2 = cria_posicao(*pos1), cria_posicao(*pos2)
         #Validar se a escolha eh valida
         adjacentes = obter_posicoes_adjacentes(pos1)
-        if not ((pos2 in adjacentes or (pos1 == pos2 and livres == [])) and \
-              obter_peca(t, pos1) == peca and \
-                    obter_peca(t, pos2) != obter_peca_oponente(peca)):
+        if not ((pos2 in adjacentes or (pos1 == pos2 and \
+    obter_livres_adjacentes(t,pos1) == [])) and obter_peca(t, pos1) == peca \
+        and obter_peca(t, pos2) != obter_peca_oponente(peca)):
             raise ValueError(erro)
-        
         return (pos1, pos2)
     else:
         pos = input("Turno do jogador. Escolha uma posicao: ")
@@ -520,10 +583,15 @@ def obter_movimento_manual(t, peca):
         if not eh_vetor(pos): raise ValueError(erro)
         pos = cria_posicao(pos[0], pos[1])
         if not (obter_peca(t, pos) == peca_vazia): raise ValueError(erro)
-        
         return (pos,)
 
 def minimax(t, jgdr, profundidade, seq_movimentos):
+    """tabuleiro x jogador x inteiro x lista -> tuplo
+
+    Esta funcao implementa o algoritmo "minimax" descrito em Algoritmo 1.
+    
+    Esta funcao nao gera erros.
+"""
     ganhador = obter_ganhador(t)
     oponente = obter_peca_oponente(jgdr)
     melhor_seq_movimentos = None
@@ -532,37 +600,48 @@ def minimax(t, jgdr, profundidade, seq_movimentos):
     if ganhador != cria_peca(" ") or profundidade == 0:
         #valor_tabuleiro eh pegar no obter_ganhador e converter p/ int
         return (peca_para_inteiro(ganhador), seq_movimentos)
-    #end
     else:
-        #A assumir que melhor_resultado = repr inteira do adversario?
         melhor_resultado = peca_para_inteiro(oponente)
         livres = obter_posicoes_livres(t)
         for pos_jgdr in obter_posicoes_jogador(t, jgdr):
             for pos_adj in obter_posicoes_adjacentes(pos_jgdr):
                 if pos_adj in livres:
-                    copia_tab = cria_copia_tabuleiro(t) #ver se eh shallow copy ou nao
-                    novo_movimento = [pos_jgdr, pos_adj] #ver se tenho q criar copia
+                    copia_tab = cria_copia_tabuleiro(t)
+                    novo_movimento = [pos_jgdr, pos_adj]
                     move_peca(copia_tab, *novo_movimento)
                     novo_resultado, nova_seq_movimentos= \
-                        minimax(copia_tab, oponente, profundidade-1, seq_movimentos + novo_movimento)
+                        minimax(copia_tab, oponente, profundidade-1, \
+                            seq_movimentos + novo_movimento)
                     if not(melhor_seq_movimentos) or \
     (reprint_jgdr == cria_peca("X") and novo_resultado > melhor_resultado) or \
     (reprint_jgdr == cria_peca("O") and novo_resultado < melhor_resultado):
                         melhor_resultado, melhor_seq_movimentos = \
                             novo_resultado, nova_seq_movimentos
-
         return melhor_resultado, melhor_seq_movimentos
 
-def indice_para_pos(ind): 
+#Funcao auxiliar
+def indice_para_pos(ind):
+    """inteiro -> posicao
+
+    indice_para_pos(ind) devolve a posicao correspondente ao indice fornecido,
+    seguindo a ordem de leitura do tabuleiro e tendo em conta que "a1" = 0
+    e "c3" = 8.
+"""
     i = 0 
     for pos in obter_todas_posicoes(): 
         if i == ind: 
             return pos 
         i+=1 
  
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$CRITERIOS DO OBTER_POSICAO_AUTO$$$$$$$$$$$$$$$$$$$ 
-    #Criterio 1e2: Vitoria ou bloqueio de vitoria 
-def crit_1e2(t, jgdr, linhas, cols): 
+#Criterios de colocacao do obter_movimento_auto
+#Criterio 1e2: Vitoria ou bloqueio de vitoria 
+def crit_1e2(jgdr, linhas, cols):
+    """tabuleiro x peca x lista de linhas x lista de colunas -> posicao
+
+    Esta funcao implementa o criterio 1 e 2 (Vitoria e Bloqueio),
+    descritos para a fase de colocacao.
+"""
+
     i = 0 
     peca_vazia = cria_peca(" ")
     for linha in linhas: 
@@ -582,16 +661,31 @@ def crit_1e2(t, jgdr, linhas, cols):
         else: 
             i+=3
      
-def crit_3(t): 
+def crit_3(t):
+    """tabuleiro -> posicao
+
+    Esta funcao implementa o criterio 3(Centro), descrito para a fase de
+    colocacao.
+"""
     centro = cria_posicao("b", "2") 
     if obter_peca(t, centro) == cria_peca(" "): 
         return centro 
-def crit_4(t):     
+def crit_4(t):
+    """tabuleiro -> posicao
+
+    Esta funcao implementa o criterio 4(Canto Vazio), descrito para a fase de
+    colocacao.
+"""
     cantos = [cria_posicao(c, l) for l in "13" for c in "ac"] 
     for c in cantos: 
         if obter_peca(t, c) == cria_peca(" "): 
             return c  
 def crit_5(t): 
+    """tabuleiro -> posicao
+
+    Esta funcao implementa o criterio 5(Lateral Vazio), descrito para a fase de
+    colocacao.
+"""
     #Escolheu-se nao obter as laterais programaticamente porque 
     #diminui bastante a complexidade deste criterio 
     posicoes = ["b1", "a2", "c2", "b3"] 
@@ -599,12 +693,17 @@ def crit_5(t):
     for pos in posicoes: 
         if pecas_iguais(obter_peca(pos), cria_peca()): 
             return pos 
-def crit_6(t): 
-    return 
-#$$$$$$$$$$$$$$$$$$$$$$$$$$$ EOF CRITERIOS $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ 
 
  
 def obter_movimento_auto(t, jgdr, modo):
+    """tabuleiro x peca x str -> tuplo de posicoes
+
+    Funcao auxiliar que recebe um tabuleiro, uma peca de um jogador e uma
+    cadeia de caracteres e devolve um tuplo com uma ou duas posicoes que 
+    representam uma posicao ou um movimento escolhido automaticamente.
+
+    
+"""
     linhas = [obter_vetor(t, l) for l in "123"]
     cols = [obter_vetor(t, c) for c in "abc"]
     peca_vazia = cria_peca(" ")
@@ -620,43 +719,43 @@ def obter_movimento_auto(t, jgdr, modo):
             return tuple(minimax(t, jgdr, 5, [])[1])
     else:
         #Fase de posicionamento
-        rslt = crit_1e2(t, jgdr, linhas, cols) or \
-            crit_1e2(t, obter_peca_oponente(jgdr), linhas, cols) or \
-                crit_3(t) or crit_4(t) or crit_5(t) or crit_6(t)
-        return (rslt, )
+        return((crit_1e2(jgdr, linhas, cols) or \
+            crit_1e2(obter_peca_oponente(jgdr), linhas, cols) or \
+                crit_3(t) or crit_4(t) or crit_5(t)), )
 
 
 def moinho(jgdr, modo):
+    """str x str -> str
+
+    Funcao principal que permite jogar um jogo completo do jogo do moinho de
+    um jogador contra o computador. A funcao recebe duas cadeias de caracteres
+    e devolve a representacao externa da peca ganhadora("[X]" ou "[O]").
+
+    O 1o argumento corresponde a representacao externa da peca com que deseja
+    jogar o jogador humano, e o segundo seleciona o nivel de dificuldade
+    do jogo.
+
+    Se algum dos argumentos dados forem invalidos, a funcao gera um erro.
+"""
     if not (len(jgdr) == 3 and jgdr[1] in "XO" and \
         modo in ("facil", "normal", "dificil")):
         raise ValueError("moinho: agumentos invalidos")
     print("Bem-vindo ao JOGO DO MOINHO. Nivel de dificuldade {}.".format(modo))
     t = cria_tabuleiro()
-    print_tab(t)
-    print()
-
+    print(tabuleiro_para_str(t))
     turno_jgdr = False
-    if jgdr[1] == "X":
-        turno_jgdr = True
-    jgdr = cria_peca(jgdr[1])
-    ganhador = cria_peca(" ")
-    while ganhador == cria_peca(" "):
+    if jgdr[1] == "X": turno_jgdr = True
+    jgdr, ganhador = cria_peca(jgdr[1]), cria_peca(" ")
+    #Loop enquanto nenhum dos jogadores ganhar
+    while obter_ganhador(t) == cria_peca(" "):
         if turno_jgdr:
             mov = obter_movimento_manual(t, jgdr)
-            if len(mov) == 1:
-                coloca_peca(t, jgdr, mov[0])
-            else:
-                move_peca(t, mov[0], mov[1])
-            print_tab(t)
+            if len(mov) == 1: coloca_peca(t, jgdr, mov[0])
+            else: move_peca(t, mov[0], mov[1])
+            print(tabuleiro_para_str(t))
             turno_jgdr = False
         else:
             print("Turno do computador ({}):".format(modo))
-            print_tab(t)
+            print(tabuleiro_para_str(t))
             turno_jgdr=True
-        
-        ganhador = obter_ganhador(t)
-        if obter_ganhador(t) != cria_peca(" "):
-            return ganhador
-
-
-t = tuplo_para_tabuleiro(((0, -1, -1), (-1, 1, 0), (1, 0, 1)))
+    return peca_para_str(obter_ganhador(t))
