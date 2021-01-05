@@ -6,8 +6,8 @@
 #valores possiveis "a","b","c" e "1","2","3";respetivamente
 # cria_posicao: str x str -> posicao
 # cria_copia_posicao: posicao -> posicao
-# eh_pos_c: posicao -> str
-# eh_pos_l: posicao -> str
+# obter_pos_c: posicao -> str
+# obter_pos_l: posicao -> str
 # eh_posicao: universal -> booleano
 # posicoes_iguais: posicao x posicao -> booleano
 # posicao_para_str: posicao -> str
@@ -32,7 +32,9 @@ def cria_posicao(c, l):
     return {"c": c, "l":l} 
 
 def cria_copia_posicao(p):
-    """cria copia posicao(p) recebe uma posicao e devolve 
+    """posicao -> posicao
+
+    cria copia posicao(p) recebe uma posicao e devolve 
     uma copia nova da posicao.
     O construtor verifica a validade dos seus argumentos, gerando um ValueError
     caso os seus argumentos nao sejam validos.
@@ -43,43 +45,69 @@ def cria_copia_posicao(p):
 
 #Seletores
 def obter_pos_c(p):
-    """
+    """posicao -> str
+
+       obter_pos_c(p) devolve a componente coluna c da posicao p.
 """
     return p["c"]
 
 def obter_pos_l(p):
+    """posicao -> str
+
+       obter_pos_l(p) devolve a componente linha l da posicao p.
+"""
     return p["l"]
 
 #Reconhecedores 
 def eh_posicao(p): 
+    """universal -> booleano
+
+    eh_posicao(arg) devolve True caso o seu argumento seja um TAD posicao 
+    e False caso contrario.
+"""
     return isinstance(p, dict) and "c" in p and "l" in p and \
         p["c"] in ("a","b","c") and \
         p["l"] in ("1","2","3") and len(p) == 2
 
 #Teste
 def posicoes_iguais(p1, p2):
+    """posicao x posicao -> booleano
+    
+    posicoes_iguais(p1, p2) devolve True apenas se p1 e p2 sao posicoes e sao
+iguais.
+"""
     if eh_posicao(p1) and eh_posicao(p2):
         return p1 == p2
     return False
 
 #Transformador
 def posicao_para_str(p):
+    """posicao_para_str: posicao -> str
+
+    posicao_para_str(p) devolve a cadeia de caracteres "cl" que representa o seu
+argumento, sendo os valores c e l as componentes coluna e linha de p.
+"""
     return p["c"] + p["l"]
 
-#Funcao auxiliar: Retorna todas as posicoes existentes
-
+#Funcao auxiliar
 def obter_todas_posicoes():
+    """{} -> universal
+
+    obter_todas_posicoes_ devolve a lista que contem todas os TAD posicoes
+    existentes, por ordem de leitura do tabuleiro.
+"""
     return [cria_posicao(c,l) for l in "123" for c in "abc"]
     
 #Funcao de alto nivel
-
-
 def obter_posicoes_adjacentes(p):
+    """posicao -> tuplo de posicoes
 
+    obter_posicoes_adjacentes(p) devolve um tuplo com as posicoes adjacentes
+    ah posicao p de acordo com a ordem de leitura do tabuleiro.
+"""
     c, l = obter_pos_c(p), obter_pos_l(p)
     
-    centro = cria_posicao("b", "2")
-    posicoes = obter_todas_posicoes()
+    centro, posicoes = cria_posicao("b", "2"), obter_todas_posicoes()
 
     #Caso de ser o centro
     if posicoes_iguais(p, centro):
@@ -107,11 +135,8 @@ def obter_posicoes_adjacentes(p):
         for pos in posicoes:
             if pos in rslt:
                 rslt_ordenado = rslt_ordenado + (pos,)
-
     return rslt_ordenado
-   
-
-
+    
 #TAD peca
 # Representacao interna: dicionario com uma unica chave "p", sendo o seu
 #valor um inteiro (1, -1 ou 0)
@@ -123,6 +148,16 @@ def obter_posicoes_adjacentes(p):
 
 #Construtores
 def cria_peca(p):
+    """str -> peca
+
+    cria_peca(s) recebe uma cadeia de carateres correspondente ao identificador
+    de um dos dois jogadores ("X" ou "O") ou a uma peca livre (" ") e devolve a
+    peca correspondente. 
+    
+    O construtor verifica a validade dos seus argumentos, gerando um ValueError 
+    com a mensagem "cria peca: argumento invalido"
+    caso o seu argumento nao seja valido.
+"""
     if p == "X":
         return {"p": 1}
     elif p == "O":
@@ -134,10 +169,19 @@ def cria_peca(p):
 
 
 def cria_copia_peca(p):
+    """peca -> peca
+
+    cria_copia_peca(j) recebe uma peca e devolve uma copia nova da peca.
+"""
     return p.copy()
 
-#Reconhecedores
+#Reconhecedor
 def eh_peca(p):
+    """universal -> peca
+
+    eh_peca(arg) devolve True caso o seu argumento seja um TAD peca e False
+    caso contrario.
+"""
     if not isinstance(p, dict):
         return False
     if "p" not in p:
@@ -146,8 +190,11 @@ def eh_peca(p):
         and len(p) == 1
 
 #Teste
-
 def pecas_iguais(p1, p2):
+    """peca x peca -> booleano
+
+    pecas_iguais(j1, j2) devolve True apenas se p1 e p2 sao pecas e sao iguais.
+"""
     if not (eh_peca(p1) and eh_peca(p2)):
         return False
     return p1 == p2
@@ -155,6 +202,11 @@ def pecas_iguais(p1, p2):
 #Transformador
 
 def peca_para_str(p):
+    """peca -> str
+
+    peca_para_str(j) devolve a cadeia de caracteres que representa o jogador
+    dono da peca, isto eh, "[X]", "[O]" ou "[ ]".
+"""
     p = p["p"]
     if p == -1:
         return ("[O]")
@@ -167,6 +219,11 @@ def peca_para_str(p):
 
 #Funcao de alto nivel
 def peca_para_inteiro(p):
+    """peca -> Z
+
+    peca_para_inteiro(j) devolve um inteiro valor 1, -1 ou 0, dependendo se 
+    a peca eh do jogador "X", "O" ou livre, respetivamente.
+"""
     peca = peca_para_str(p)
     if peca == "[X]":
         return 1
@@ -196,6 +253,11 @@ def peca_para_inteiro(p):
 
 #Construtores
 def cria_tabuleiro():
+    """{} -> tabuleiro
+
+    cria_tabuleiro() devolve um tabuleiro de jogo do moinho de 3x3 sem posicoes
+    ocupadas por pecas de jogador.
+"""
     t = {}
     peca_vazia = cria_peca(" ")
     for pos in obter_todas_posicoes():
@@ -203,6 +265,11 @@ def cria_tabuleiro():
     return t
 
 def cria_copia_tabuleiro(t):
+    """tabuleiro -> tabuleiro
+
+    cria_copia_tabuleiro(t) recebe um tabuleiro e devolve uma copia nova 
+    do tabuleiro.
+"""
     if not eh_tabuleiro(t):
         print(t)
         #raise ValueError("cria_copia_tabuleiro: argumento invalido")
@@ -211,9 +278,19 @@ def cria_copia_tabuleiro(t):
 #Seletores
 
 def obter_peca(t, pos):
+    """tabuleiro x posicao -> peca
+
+    obter_peca(t, p) devolve a peca na posicao p do tabuleiro. Se a posicao nao
+estiver ocupada, devolve uma peca livre.
+"""
     return t[posicao_para_str(pos)]
 
 def obter_vetor(t, vect):
+    """tabuleiro x str -> tuplo de pecas
+
+    obter_vetor(t, s) devolve todas as pecas da linha ou coluna especificada
+    pelo seu argumento.
+"""
     cols = "abc"
     linhas = "123"
     rslt = ()
@@ -230,15 +307,30 @@ def obter_vetor(t, vect):
     return rslt
 #Modificadores
 def coloca_peca(tab, peca, pos):
+    """tabuleiro x peca x posicao -> tabuleiro
+
+    coloca_peca(t, j, p) modifica destrutivamente o tabuleiro t colocando
+     a peca j na posicao p, e devolve o proprio tabuleiro.
+"""
     tab[posicao_para_str(pos)] = peca
     return tab
 
 def remove_peca(tab, pos):
+    """tabuleiro x posicao -> tabuleiro
+
+    remove_peca(t, p) modifica destrutivamente o tabuleiro t removendo a peca
+    da posicao p, e devolve o proprio tabuleiro.
+"""
     tab[posicao_para_str(pos)] = cria_peca(" ")
     return tab
 
 def move_peca(t, pos1, pos2):
+    """tabuleiro x posicao x posicao -> tabuleiro
 
+    move_peca(t, p1, p2) modifica destrutivamente o tabuleiro t movendo a peca
+    que se encontra na posicao p1 para a posicao p2, e devolve o 
+    proprio tabuleiro.
+"""
     str_pos1, str_pos2 = posicao_para_str(pos1), posicao_para_str(pos2)
     peca = t[str_pos1]
     t[str_pos1] = cria_peca(" ")
@@ -249,6 +341,15 @@ def move_peca(t, pos1, pos2):
 #Reconhecedores
     
 def eh_tabuleiro(t):
+    """universal -> booleano
+
+    eh_tabuleiro(arg) devolve True caso o seu argumento seja um TAD tabuleiro
+    e False caso contrario. 
+    
+    Um tabuleiro valido pode ter um maximo de 3 pecas
+    de cada jogador, nao pode conter mais de 1 peca mais de um jogador que do
+    contrario, e apenas pode haver um ganhador em simultaneo.
+"""
     #Verificar se t eh dicionario de 9 elementos
     if not isinstance(t, dict):
         return False
@@ -257,6 +358,7 @@ def eh_tabuleiro(t):
 
     count_x, count_o = 0,0
 
+    #Contar pecas de cada jogador
     for pos in obter_todas_posicoes():
         str_pos = posicao_para_str(pos)
         peca = t[str_pos]
@@ -268,16 +370,28 @@ def eh_tabuleiro(t):
                 count_x += 1
             elif str_peca == "[O]":
                 count_o += 1
+    #Verificar que cada jogador apenas tem 3 pecas e nao tem 2 ou mais colocadas
+    #que o adversario
     if abs(count_o - count_x) >= 2 or count_o > 3 or count_x > 3:
         return False
     return len(obter_ganhadores_aux(t)) == 1
 
 
 def eh_posicao_livre(t, p):
-    return obter_peca(t, p) == cria_peca(" ")
-#Teste
+    """tabuleiro x posicao -> booleano
 
+    eh_posicao_livre(t, p) devolve True apenas no caso da posicao p do tabuleiro
+    corresponder a uma posicao livre.
+"""
+    return obter_peca(t, p) == cria_peca(" ")
+
+#Teste
 def tabuleiros_iguais(t1, t2):
+    """tabuleiro x tabuleiro -> booleano
+
+    tabuleiros_iguais(t1, t2) devolve True apenas se t1 e t2 sao tabuleiros 
+    e sao iguais.
+"""
     if not(eh_tabuleiro(t1) and eh_tabuleiro(t2)):
         return False
     return t1 == t2
